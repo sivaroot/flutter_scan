@@ -11,9 +11,13 @@ class Scan {
     return version;
   }
 
-  static Future<String?> parse(String path) async {
-    final String? result = await _channel.invokeMethod('parse', path);
-    return result;
+  static Future<BarcodeResult?> parse(String path) async {
+    var result = await _channel.invokeMethod('parse', path);
+    return BarcodeResult(
+        format: result['type'] == "QR_CODE"
+            ? BarcodeFormat.qrcode
+            : BarcodeFormat.barcode,
+        data: result['data']);
   }
 }
 
@@ -77,15 +81,32 @@ class _ScanViewState extends State<ScanView> {
     _channel = MethodChannel('chavesgu/scan/method_$id');
     _channel?.setMethodCallHandler((MethodCall call) async {
       if (call.method == 'onCaptured') {
-        if (widget.onCapture != null)
-          widget.onCapture!(call.arguments.toString());
+        if (widget.onCapture != null) {
+          BarcodeFormat barcodeFormat;
+          if (call.arguments["type"].toString() == "QR_CODE") {
+            barcodeFormat = BarcodeFormat.qrcode;
+          } else {
+            barcodeFormat = BarcodeFormat.barcode;
+          }
+          widget.onCapture!(
+            BarcodeResult(
+                data: call.arguments["type"].toString(), format: barcodeFormat),
+          );
+        }
       }
     });
     widget.controller?._channel = _channel;
   }
 }
 
-typedef CaptureCallback(String data);
+typedef CaptureCallback(BarcodeResult barcodeResult);
+enum BarcodeFormat { barcode, qrcode }
+
+class BarcodeResult {
+  late final String data;
+  late final BarcodeFormat format;
+  BarcodeResult({required this.data, required this.format});
+}
 
 class ScanArea {
   const ScanArea(this.width, this.height);
