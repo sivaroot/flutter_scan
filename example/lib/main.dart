@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'dart:async';
 
@@ -21,6 +19,7 @@ class _MyAppState extends State<MyApp> {
 
   ScanController controller = ScanController();
   String qrcode = 'Unknown';
+  BarcodeFormat? format;
 
   @override
   void initState() {
@@ -77,10 +76,11 @@ class _MyAppState extends State<MyApp> {
                   onPressed: () async {
                     List<Media>? res = await ImagesPicker.pick();
                     if (res != null) {
-                      String? str = await Scan.parse(res[0].path);
-                      if (str != null) {
+                      BarcodeResult? barcode = await Scan.parse(res[0].path);
+                      if (barcode != null) {
                         setState(() {
-                          qrcode = str;
+                          qrcode = barcode.data;
+                          format = barcode.format;
                         });
                       }
                     }
@@ -94,15 +94,17 @@ class _MyAppState extends State<MyApp> {
               child: ScanView(
                 controller: controller,
                 scanAreaScale: .7,
-                scanLineColor: Colors.green,
-                onCapture: (data) {
+                scanLineColor: Colors.green.shade400,
+                onCapture: (barcode) {
                   setState(() {
-                    qrcode = data;
+                    qrcode = barcode.data;
+                    format = barcode.format;
                   });
                 },
               ),
             ),
             Text('scan result is $qrcode'),
+            Text('format is $format'),
           ],
         ),
       ),
