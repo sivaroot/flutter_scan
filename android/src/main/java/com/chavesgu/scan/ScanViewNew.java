@@ -31,7 +31,7 @@ import static java.lang.Math.min;
 
 public class ScanViewNew extends BarcodeView implements PluginRegistry.RequestPermissionsResultListener {
     public interface CaptureListener {
-        void onCapture(String text);
+        void onCapture(String text, String type);
     }
     private CaptureListener captureListener;
 
@@ -64,7 +64,7 @@ public class ScanViewNew extends BarcodeView implements PluginRegistry.RequestPe
         this.decodeContinuous(new BarcodeCallback() {
             @Override
             public void barcodeResult(BarcodeResult result) {
-                captureListener.onCapture(result.getText());
+                captureListener.onCapture(result.getText(), result.getResult().getBarcodeFormat().toString());
                 Vibrator myVib = (Vibrator) context.getSystemService(VIBRATOR_SERVICE);
                 if (myVib != null) {
                     if (Build.VERSION.SDK_INT >= 26) {
