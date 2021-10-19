@@ -22,6 +22,7 @@ import com.journeyapps.barcodescanner.CaptureActivity;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -106,7 +107,7 @@ public class ScanPlugin implements FlutterPlugin, MethodCallHandler, ActivityAwa
   /**
    * AsyncTask 静态内部类，防止内存泄漏
    */
-  static class QrCodeAsyncTask extends AsyncTask<String, Integer, String> {
+  static class QrCodeAsyncTask extends AsyncTask<String, Integer, com.google.zxing.Result> {
     private final WeakReference<ScanPlugin> mWeakReference;
     private final String path;
 
@@ -116,20 +117,27 @@ public class ScanPlugin implements FlutterPlugin, MethodCallHandler, ActivityAwa
     }
 
     @Override
-    protected String doInBackground(String... strings) {
+    protected com.google.zxing.Result doInBackground(String... strings) {
       // 解析二维码/条码
       return QRCodeDecoder.decodeQRCode(mWeakReference.get().flutterPluginBinding.getApplicationContext(), path);
     }
 
     @Override
-    protected void onPostExecute(String s) {
-      super.onPostExecute(s);
+    protected void onPostExecute(com.google.zxing.Result barcodeResult) {
+      super.onPostExecute(barcodeResult);
       //识别出图片二维码/条码，内容为s
       ScanPlugin plugin = (ScanPlugin) mWeakReference.get();
-      plugin._result.success(s);
+      HashMap<String, Object> arguments = new HashMap<>();
+      arguments.put("data", barcodeResult.getText());
+      if (barcodeResult.getBarcodeFormat() == BarcodeFormat.QR_CODE) {
+        arguments.put("type", "QR_CODE");
+      } else {
+        arguments.put("type", "BARCODE");
+      }
+      plugin._result.success(arguments);
       plugin.task.cancel(true);
       plugin.task = null;
-      if (s!=null) {
+      if (barcodeResult!=null) {
         Vibrator myVib = (Vibrator) plugin.flutterPluginBinding.getApplicationContext().getSystemService(VIBRATOR_SERVICE);
         if (myVib != null) {
           if (Build.VERSION.SDK_INT >= 26) {
