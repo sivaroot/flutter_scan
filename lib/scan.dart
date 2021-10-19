@@ -90,7 +90,9 @@ class _ScanViewState extends State<ScanView> {
           }
           widget.onCapture!(
             BarcodeResult(
-                data: call.arguments["type"].toString(), format: barcodeFormat),
+              data: call.arguments["data"].toString(),
+              format: barcodeFormat,
+            ),
           );
         }
       }
