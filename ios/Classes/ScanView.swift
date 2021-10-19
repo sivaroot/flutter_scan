@@ -285,7 +285,11 @@ public class ScanView: UIView,AVCaptureMetadataOutputObjectsDelegate,FlutterPlug
       if #available(iOS 10.0, *) {
         UIImpactFeedbackGenerator(style: .medium).impactOccurred();
       }
-      self.channel!.invokeMethod("onCaptured", arguments: stringValue);
+      if metadataObject.type == AVMetadataObject.ObjectType.qr {
+        self.channel!.invokeMethod("onCaptured", arguments: ["data": stringValue, "type": "QR_CODE"]);
+      } else {
+        self.channel!.invokeMethod("onCaptured", arguments: ["data": stringValue, "type": "BARCODE"]);
+      }
     }
   }
   
