@@ -5,19 +5,17 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.BinaryBitmap;
 import com.google.zxing.ChecksumException;
+import com.google.zxing.DecodeHintType;
 import com.google.zxing.FormatException;
 import com.google.zxing.NotFoundException;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.Result;
-import com.google.zxing.qrcode.QRCodeReader;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.BinaryBitmap;
-import com.google.zxing.DecodeHintType;
-import com.google.zxing.MultiFormatReader;
-import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
+import com.google.zxing.qrcode.QRCodeReader;
 import com.huawei.hms.hmsscankit.ScanUtil;
 import com.huawei.hms.ml.scan.HmsScan;
 import com.huawei.hms.ml.scan.HmsScanAnalyzerOptions;
@@ -25,7 +23,6 @@ import com.huawei.hms.ml.scan.HmsScanAnalyzerOptions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +55,7 @@ public class QRCodeDecoder {
         HINTS.put(DecodeHintType.CHARACTER_SET, "utf-8");
 //        HINTS.put(DecodeHintType.PURE_BARCODE, Boolean.TRUE);
     }
-    public static String syncDecodeQRCode(String path) {
+    public static Result syncDecodeQRCode(String path) {
         config();
         Bitmap bitmap = pathToBitMap(path, MAX_PICTURE_PIXEL, MAX_PICTURE_PIXEL);
         int width = bitmap.getWidth();
@@ -66,7 +63,7 @@ public class QRCodeDecoder {
         byte[] mData = getYUV420sp(bitmap.getWidth(), bitmap.getHeight(), bitmap);
 
         Result result = decodeImage(mData, width, height);
-        if (result!=null) return result.getText();
+        if (result!=null) return result;
         return null;
     }
     public static String syncDecodeQRCode(Bitmap bitmap) {
@@ -215,7 +212,7 @@ public class QRCodeDecoder {
     }
 
 
-    public static String decodeQRCode(Context context, String path) {
+    public static Result decodeQRCode(Context context, String path) {
         BitmapFactory.Options sizeOptions = new BitmapFactory.Options();
         sizeOptions.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(path, sizeOptions);
@@ -228,9 +225,11 @@ public class QRCodeDecoder {
 
         HmsScanAnalyzerOptions options = new HmsScanAnalyzerOptions.Creator().setPhotoMode(true).create();
         HmsScan[] hmsScans = ScanUtil.decodeWithBitmap(context, bitmap, options);
-
         if (hmsScans != null && hmsScans.length > 0) {
-            return hmsScans[0].getOriginalValue();
+            if (hmsScans[0].getScanType() == 1) {
+                return new Result(hmsScans[0].getOriginalValue(), hmsScans[0].getOriginValueByte(), null, BarcodeFormat.QR_CODE);
+            }
+            return new Result(hmsScans[0].getOriginalValue(), hmsScans[0].getOriginValueByte(), null, BarcodeFormat.CODE_128);
         }
         return syncDecodeQRCode(path);
     }
