@@ -127,8 +127,8 @@ public class ScanPlugin implements FlutterPlugin, MethodCallHandler, ActivityAwa
       super.onPostExecute(barcodeResult);
       //识别出图片二维码/条码，内容为s
       ScanPlugin plugin = (ScanPlugin) mWeakReference.get();
-      HashMap<String, Object> arguments = new HashMap<>();
       if (barcodeResult!=null) {
+        HashMap<String, Object> arguments = new HashMap<>();
         arguments.put("data", barcodeResult.getText());
         if (barcodeResult.getBarcodeFormat() == BarcodeFormat.QR_CODE) {
           arguments.put("type", "QR_CODE");
@@ -136,6 +136,8 @@ public class ScanPlugin implements FlutterPlugin, MethodCallHandler, ActivityAwa
           arguments.put("type", "BARCODE");
         }
         plugin._result.success(arguments);
+        plugin.task.cancel(true);
+        plugin.task = null;
         Vibrator myVib = (Vibrator) plugin.flutterPluginBinding.getApplicationContext().getSystemService(VIBRATOR_SERVICE);
         if (myVib != null) {
           if (Build.VERSION.SDK_INT >= 26) {
@@ -145,6 +147,7 @@ public class ScanPlugin implements FlutterPlugin, MethodCallHandler, ActivityAwa
           }
         }
       }
+      plugin._result.success(arguments);
       plugin.task.cancel(true);
       plugin.task = null;
     }
