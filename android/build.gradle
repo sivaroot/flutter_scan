@@ -4,10 +4,12 @@ version '1.0'
 buildscript {
     repositories {
         google()
+        mavenCentral()
         maven {url 'https://developer.huawei.com/repo/'}
     }
 
     dependencies {
+        mavenCentral()
         classpath 'com.android.tools.build:gradle:3.5.0'
         classpath 'com.huawei.agconnect:agcp:1.6.0.300'
     }
