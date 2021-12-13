@@ -9,7 +9,6 @@ buildscript {
     }
 
     dependencies {
-        mavenCentral()
         classpath 'com.android.tools.build:gradle:4.2.2'
         classpath 'com.huawei.agconnect:agcp:1.6.0.300'
     }
