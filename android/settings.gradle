@@ -1,1 +1,8 @@
 rootProject.name = 'scan'
+dependencyResolutionManagement {
+    repositories {
+        google()
+        jcenter() 
+        maven {url 'https://developer.huawei.com/repo/'}
+    }
+}
